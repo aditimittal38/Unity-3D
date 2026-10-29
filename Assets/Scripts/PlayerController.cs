@@ -41,9 +41,9 @@ public class PlayerController : MonoBehaviour
         else
             verticalVelocity += Physics.gravity.y * Time.deltaTime;
 
-        Vector3 move = transform.right * x + transform.forward * z;
-        move.y = verticalVelocity;
-        cc.Move(move * moveSpeed * Time.deltaTime);
+        Vector3 horizontal = (transform.right * x + transform.forward * z) * moveSpeed;
+        horizontal.y = verticalVelocity;
+        cc.Move(horizontal * Time.deltaTime);
     }
 
     void Look()
@@ -64,7 +64,7 @@ public class PlayerController : MonoBehaviour
         {
             var obj = hit.collider.GetComponent<InteractableObject>();
             if (obj != null) obj.Interact();
-            else UIManager.Instance.ShowStatus("Nothing to interact with here.");
+            else UIManager.Instance?.ShowStatus("Nothing to interact with here.");
         }
     }
 }

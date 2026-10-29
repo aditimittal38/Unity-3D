@@ -62,21 +62,21 @@ public class InteractableObject : MonoBehaviour
             case InteractionType.Dragon:
                 dragonFlying = !dragonFlying;
                 if (animator != null) animator.SetBool("flyParam", dragonFlying);
-                UIManager.Instance.ShowStatus(dragonFlying ? "Dragon takes flight!" : "Dragon lands and rests.");
+                UIManager.Instance?.ShowStatus(dragonFlying ? "Dragon takes flight!" : "Dragon lands and rests.");
                 break;
 
             case InteractionType.Light:
-                if (targetLight == null) { UIManager.Instance.ShowStatus("No light assigned!"); return; }
+                if (targetLight == null) { UIManager.Instance?.ShowStatus("No light assigned!"); return; }
                 targetLight.enabled = !targetLight.enabled;
                 if (switchRenderer != null)
                     switchRenderer.material.color = targetLight.enabled ? Color.yellow : Color.gray;
-                UIManager.Instance.ShowStatus(targetLight.enabled ? "Light switched ON." : "Light switched OFF.");
+                UIManager.Instance?.ShowStatus(targetLight.enabled ? "Light switched ON." : "Light switched OFF.");
                 break;
 
             case InteractionType.Door:
                 doorOpen = !doorOpen;
                 rotating = true;
-                UIManager.Instance.ShowStatus(doorOpen ? "Door opened." : "Door closed.");
+                UIManager.Instance?.ShowStatus(doorOpen ? "Door opened." : "Door closed.");
                 break;
         }
     }
