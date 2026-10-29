@@ -1,231 +1,146 @@
-# AR Dragon — ISE 1 + ISE 2 (ARVR 7CS432)
+# Interactive 3D Environment — HCI ISE2
 
-**Walchand College of Engineering, Sangli | B.Tech Sem VII CS | AY 2026-27**  
-**Course:** Augmented and Virtual Reality (7CS432)  
-**Repository:** https://github.com/aditimittal38/AR-Dragon-1  
-**Demo Link (Drive):** https://drive.google.com/drive/folders/1SxAB9H3kbnMbqN72Miyn0bjewZP0tV-f?usp=sharing
+**Walchand College of Engineering, Sangli | Department of Computer Science and Engineering**  
+**Course:** Human–Computer Interaction (HCI)  
+**Assignment:** Design and Develop an Interactive 3D Environment Using Unity  
+**Repository:** https://github.com/aditimittal38/Unity-3D
 
 ---
 
 ## What This Project Does
 
-| Scene | Mode | Description |
-|---|---|---|
-| `SampleScene` | **AR (ISE 1)** | Spawns a Charizard 3D model on a detected image using AR Foundation + ARCore. Joystick controls movement and animation. |
-| `VRScene` | **VR (ISE 2)** | VR environment with XR Interaction Toolkit. Navigate with the XR Device Simulator (WASD + mouse). Grab Charizard with a VR controller to trigger its flying animation. |
+A desktop interactive 3D environment built in Unity demonstrating core HCI principles — visibility, feedback, consistency, affordance, user control, and error prevention.
+
+The player navigates a 3D room using keyboard and mouse, and interacts with three objects:
+- **Charizard Dragon** — press E to toggle flying animation
+- **Light Switch** — press E to toggle a point light on/off (switch changes colour)
+- **Door** — press E to smoothly open/close
 
 ---
 
-## ISE 2 — VRTK Implementation
+## HCI Principles Demonstrated
 
-### Assignment Brief
-> "How to use VRTK? You can implement by any method, as we studied in Module 5. Take reference of ISE 1 and try to implement the VRTK method on that."
+| Principle | Where Applied |
+|---|---|
+| **Visibility** | Instructions panel always visible on screen; status messages appear on interaction |
+| **Feedback** | Object colour changes, animation triggers, and status text on every interaction |
+| **Consistency** | All interactions use the same key (E); all feedback appears in the same place |
+| **Affordance** | Light switch turns yellow when on; door visually rotates open |
+| **User Control** | WASD navigation, mouse look, H to toggle help, ESC to unlock cursor |
+| **Error Prevention** | Interact range limited to 4 units; nothing triggers accidentally from a distance |
 
-### Why XR Interaction Toolkit (XRI) Instead of VRTK
+---
 
-VRTK is not compatible with Unity 6 (this project uses Unity 6.5.10f1 + URP 17.5.0). Upgrading VRTK would require downgrading the engine, which would break the ISE 1 AR Foundation scene.
+## Controls
 
-Module 5 lists **XR Interaction Toolkit** as a VRTK alternative — it provides the same core features: grab interactions, teleportation, locomotion, and snap turning. XRI 3.0.11 was already present in `Packages/manifest.json`.
+| Key | Action |
+|---|---|
+| W A S D | Move |
+| Mouse | Look around |
+| E | Interact with object in crosshair |
+| H | Toggle instructions panel |
+| ESC | Unlock mouse cursor |
+| Exit button | Quit game |
 
 ---
 
 ## Tech Stack
 
-| Layer | Package / Version |
+| | |
 |---|---|
-| Engine | Unity 6.5 (6000.5.10f1) |
+| Engine | Unity 6 (6000.5.10f1) |
 | Render Pipeline | URP 17.5.0 |
-| VR Framework | XR Interaction Toolkit 3.0.11 |
-| AR Framework | AR Foundation 6.5.0 + ARCore 6.5.0 |
-| Input | Unity Input System 1.20.0 |
-| 3D Model | Charizard (glTF, `charizard_006_legends_za`) |
+| Platform | Desktop (Mac M1 / Windows) |
+| Input | Unity Input Manager (Legacy) |
+| 3D Model | Charizard (`charizard_006_legends_za`) |
 
 ---
 
-## VRScene — What Was Built
+## Scripts
 
-```
-VRScene
-├── Directional Light
-├── XR Interaction Manager       ← routes all XRI events
-├── XR Origin (VR)               ← camera rig + controllers
-│   ├── Camera Offset
-│   │   └── Main Camera
-│   └── Trackables
-│       ├── Left Controller Ray Interactor
-│       └── Right Controller Ray Interactor
-├── XR Device Simulator          ← keyboard/mouse VR simulation
-├── Plane                        ← floor with TeleportationArea
-└── CharizardPrefab
-    ├── Animator                 ← flyParam bool controls animation
-    ├── Rigidbody                ← IsKinematic=true, UseGravity=false
-    ├── Box Collider             ← required by XRGrabInteractable
-    ├── XR Grab Interactable     ← makes Charizard grabbable
-    └── VR Dragon Interaction    ← custom script (see below)
-```
-
-### VRDragonInteraction.cs
-
-Attach to CharizardPrefab alongside `XRGrabInteractable`. Listens to grab/release events and toggles the `flyParam` animator boolean.
-
-```csharp
-using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
-
-[RequireComponent(typeof(XRGrabInteractable))]
-[RequireComponent(typeof(Animator))]
-public class VRDragonInteraction : MonoBehaviour
-{
-    private XRGrabInteractable grabInteractable;
-    private Animator animator;
-
-    private void Awake()
-    {
-        grabInteractable = GetComponent<XRGrabInteractable>();
-        animator = GetComponent<Animator>();
-    }
-
-    private void OnEnable()
-    {
-        grabInteractable.selectEntered.AddListener(OnGrabbed);
-        grabInteractable.selectExited.AddListener(OnReleased);
-    }
-
-    private void OnDisable()
-    {
-        grabInteractable.selectEntered.RemoveListener(OnGrabbed);
-        grabInteractable.selectExited.RemoveListener(OnReleased);
-    }
-
-    private void OnGrabbed(SelectEnterEventArgs args)  => animator.SetBool("flyParam", true);
-    private void OnReleased(SelectExitEventArgs args)  => animator.SetBool("flyParam", false);
-}
-```
-
-### Animation Behavior
-
-| `flyParam` | Animation | When |
-|---|---|---|
-| `false` | Slow idle hover | Default state — Charizard hovers gently |
-| `true` | Fast active flying | On VR controller grab |
-
----
-
-## XR Device Simulator Controls
-
-| Key | Action |
+| Script | Purpose |
 |---|---|
-| **Tab** | Cycle input mode (HMD → Controller → Hand) |
-| **U** | Select HMD mode |
-| **T / Y** | Toggle Left / Right Controller |
-| **Mouse** | Look around (HMD) / Aim controller ray |
-| **W A S D** | Move forward / back / strafe |
-| **Q / E** | Move up / down |
-| **G** | Trigger / Grab |
-| **R** | Rotate controller |
+| `PlayerController.cs` | WASD movement, mouse look, E-key raycast interaction |
+| `InteractableObject.cs` | Handles Dragon / Light / Door interaction logic and feedback |
+| `UIManager.cs` | Status text, instructions panel, exit and help buttons |
+
+---
+
+## Scene Setup
+
+```
+HCIScene
+├── Directional Light
+├── Player (CharacterController)
+│   └── Main Camera
+├── Plane (Floor)
+├── Wall_Front / Wall_Back / Wall_Left / Wall_Right
+├── CharizardPrefab        ← InteractableObject (Dragon)
+├── Door                   ← InteractableObject (Door)
+├── LightSwitch            ← InteractableObject (Light)
+├── PointLight
+└── Canvas (UIManager)
+    ├── StatusText
+    ├── InstructionsPanel
+    ├── ExitButton
+    └── HelpButton
+```
 
 ---
 
 ## Screenshots
 
-### ISE 1 — AR Dragon Starting Point
+### 1. Creating the New Scene
+![Create new scene](Screenshots/3_create_new_scene.png)
 
-![ISE 1 AR Dragon project](Screenshots/1_ise1.png)
-*SampleScene with AR Foundation — Charizard spawned on a detected reference image*
+### 2. Adding the Floor Plane
+![Adding floor plane](Screenshots/create_plane.png)
 
----
+### 3. Add 3D Object — Plane Menu
+![Adding plane via menu](Screenshots/7_add_3dobject_plane.png)
 
-### VRScene — Complete Hierarchy and Inspector
+### 4. Walls, Floor, and Player Added
+![Walls floor player](Screenshots/walls_flor_player_Added.png)
 
-![VRScene complete hierarchy and CharizardPrefab inspector](Screenshots/10_copy_charizard_prefab_to_hierarchy.png)
-*VRScene Hierarchy: XR Interaction Manager, XR Origin (VR), XR Device Simulator, Plane, CharizardPrefab all in place*
+### 5. Charizard Prefab in Project
+![Charizard prefab](Screenshots/9_find_charizard_prefab.png)
 
----
+### 6. Charizard Placed in Scene Hierarchy
+![Charizard in hierarchy](Screenshots/10_copy_charizard_prefab_to_hierarchy.png)
 
-### XR Device Simulator — HMD Navigation Verified
+### 7. Capsule Collider and Components Added
+![Capsule collider](Screenshots/capsule_collder.png)
 
-![HMD controls working in Play mode](Screenshots/15_HMD_controls_working_WASDQE.png)
-*Play mode with HMD mode active — WASD, mouse look, and Q/E navigation confirmed working; Charizard visible in slow idle hover*
+### 8. All Components Added — Full Inspector View
+![All components](Screenshots/all_componnets_Added.png)
 
----
+### 9. WASD Navigation Working in Play Mode
+![WASD navigation](Screenshots/15_HMD_controls_working_WASDQE.png)
 
-### flyParam Animation Effect
+### 10. flyParam Animation Toggle — Charizard Flying
+![flyParam effect](Screenshots/16_fly_param_effect.png)
 
-![Animator flyParam and Charizard fast fly animation](Screenshots/16_fly_param_effect.png)
-*Animator Parameters tab showing flyParam; unchecked = slow idle hover, checked = fast active flying*
+### 11. Scene Running on Mac M1 — Full Hierarchy View
+![Scene on Mac](Screenshots/image.png)
 
----
-
-### Final VRScene Look
-
-![Complete final VRScene](Screenshots/17_complete_final_look.png)
-*Final VRScene — Hierarchy, CharizardPrefab Inspector (Box Collider, XR Grab Interactable, VR Dragon Interaction, Rigidbody), and Game view*
-
----
-
-### All Screenshots (Full List)
-
-All 17 implementation screenshots are in [`Screenshots/`](Screenshots/).
-
-| # | File | What It Shows |
-|---|---|---|
-| 1 | [1_ise1.png](Screenshots/1_ise1.png) | ISE 1 AR Dragon project — starting point |
-| 2 | [2_import_xr_interation_tools.png](Screenshots/2_import_xr_interation_tools.png) | Importing XRI Starter Assets in Package Manager |
-| 3 | [3_create_new_scene.png](Screenshots/3_create_new_scene.png) | Creating a new URP scene (VRScene) |
-| 4 | [4_delete_main_camera.png](Screenshots/4_delete_main_camera.png) | Default camera deleted; VRScene with only Directional Light |
-| 5 | [5_XR_device_simulator_prefab.png](Screenshots/5_XR_device_simulator_prefab.png) | XR Device Simulator prefab located in Samples folder |
-| 6 | [6_add_componnets_locomotion_etc.png](Screenshots/6_add_componnets_locomotion_etc.png) | Locomotion System + Teleportation Provider + Snap Turn on XR Origin |
-| 7 | [7_add_3dobject_plane.png](Screenshots/7_add_3dobject_plane.png) | Adding a floor Plane via GameObject > 3D Object |
-| 8 | [8_add_component_plane.png](Screenshots/8_add_component_plane.png) | TeleportationArea component added to the Plane |
-| 9 | [9_find_charizard_prefab.png](Screenshots/9_find_charizard_prefab.png) | CharizardPrefab located in Project browser |
-| 10 | [10_copy_charizard_prefab_to_hierarchy.png](Screenshots/10_copy_charizard_prefab_to_hierarchy.png) | CharizardPrefab dragged into VRScene Hierarchy |
-| 11 | [11_add_box_xollider.png](Screenshots/11_add_box_xollider.png) | Box Collider added to CharizardPrefab |
-| 12 | [12_add_xr_grab_interactable.png](Screenshots/12_add_xr_grab_interactable.png) | XR Grab Interactable (Movement Type: Kinematic) |
-| 13 | [13_add_vr_dragon_interaction.png](Screenshots/13_add_vr_dragon_interaction.png) | VR Dragon Interaction script added |
-| 14 | [14_xr_controller.png](Screenshots/14_xr_controller.png) | Play mode — XR Device Simulator Controller mode |
-| 15 | [15_HMD_controls_working_WASDQE.png](Screenshots/15_HMD_controls_working_WASDQE.png) | HMD navigation verified with WASD + mouse |
-| 16 | [16_fly_param_effect.png](Screenshots/16_fly_param_effect.png) | Animator showing flyParam; Charizard in fast fly pose |
-| 17 | [17_complete_final_look.png](Screenshots/17_complete_final_look.png) | Complete VRScene — Hierarchy, Inspector, Game view |
-
----
-
-## Results
-
-| Feature | Status |
-|---|---|
-| HMD navigation (WASD, mouse, Q/E) | Verified |
-| Charizard idle hover animation | Verified |
-| Charizard active fly animation (flyParam) | Verified |
-| VRDragonInteraction script (compile + event wiring) | Verified |
-| Teleportation Area on floor plane | Configured |
-| XR controller grab (runtime) | Partial — requires physical OpenXR controller |
-
----
-
-## Demo Video
-
-https://drive.google.com/drive/folders/1SxAB9H3kbnMbqN72Miyn0bjewZP0tV-f?usp=sharing
-
----
-
-## Known Limitations
-
-- VRTK is not compatible with Unity 6 — XRI 3.0.11 used instead (Module 5 alternative).
-- No physical VR headset available — all testing done with XR Device Simulator on Mac M1.
-- Locomotion System and Snap Turn Provider show deprecation warnings in XRI 3.0.0; still functional.
-- Controller grab runtime interaction not confirmed without physical hardware.
+### 12. Final Game View with UI Overlay
+![Final game view](Screenshots/final_view.png)
 
 ---
 
 ## How to Run
 
-1. Clone: `git clone https://github.com/aditimittal38/AR-Dragon-1.git`
-2. Open in **Unity 6.5** (6000.5.10f1) — do not upgrade the project.
-3. In Window > Package Manager, ensure XRI 3.0.11 Samples are imported (Starter Assets + XR Device Simulator).
-4. Open **VRScene** (Assets/Scenes/VRScene.unity) for the VR scene.
-5. Open **SampleScene** for the ISE 1 AR scene (requires Android + ARCore build target).
-6. Press Play in VRScene. Use Tab to cycle input modes in the XR Device Simulator overlay.
+1. Clone: `git clone https://github.com/aditimittal38/Unity-3D.git`
+2. Open in **Unity 6** (6000.5.10f1) — do not upgrade
+3. Open **HCIScene** (`Assets/Scenes/HCIScene.unity`)
+4. Go to **Edit → Project Settings → Player → Other Settings → Active Input Handling** → set to **Both**
+5. Press **Play**
+
+---
+
+## Demo Video
+
+[Watch the demonstration video](https://drive.google.com/file/d/1m8A6nE3qSddO3EzJZYPPxs085OBOg8Kc/view?usp=sharing)
 
 ---
 
@@ -235,16 +150,13 @@ https://drive.google.com/drive/folders/1SxAB9H3kbnMbqN72Miyn0bjewZP0tV-f?usp=sha
 AR-Dragon-1/
 ├── Assets/
 │   ├── Assets/charizard_006_legends_za/   ← 3D model + animations
+│   ├── Materials/                          ← Floor, Wall, Door materials
 │   ├── Scenes/
-│   │   ├── SampleScene.unity              ← ISE 1 AR scene
-│   │   └── VRScene.unity                  ← ISE 2 VR scene
-│   ├── Scripts/
-│   │   ├── ARTrackedImageSpawner.cs       ← ISE 1: spawns dragon on image
-│   │   ├── CharizardController.cs         ← ISE 1: joystick movement
-│   │   └── VRDragonInteraction.cs         ← ISE 2: grab → fly animation
-│   └── Samples/XR Interaction Toolkit/3.0.11/
-│       ├── Starter Assets/
-│       └── XR Device Simulator/
-├── Screenshots/                           ← ISE 2 implementation screenshots
-└── Packages/manifest.json                 ← XRI 3.0.11 + AR Foundation 6.5
+│   │   └── HCIScene.unity                 ← Main HCI interactive scene
+│   └── Scripts/
+│       ├── PlayerController.cs            ← Navigation + interaction input
+│       ├── InteractableObject.cs          ← Object interaction logic
+│       └── UIManager.cs                   ← HCI UI management
+├── Screenshots/                           ← Implementation screenshots
+└── Packages/manifest.json
 ```
